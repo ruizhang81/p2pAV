@@ -4,8 +4,6 @@ import android.media.MediaCodec;
 import android.media.MediaFormat;
 import android.view.Surface;
 
-import com.sophon.p2pav.decode.BaseDecode;
-
 
 public class VideoDecode extends BaseDecode {
 

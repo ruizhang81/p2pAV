@@ -4,8 +4,9 @@ import android.content.Context;
 import android.os.Environment;
 import android.widget.Toast;
 
-import java.io.DataOutputStream;
+import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
@@ -39,17 +40,19 @@ public class FileUtils {
         } else Toast.makeText(context, "SD卡不存在或者不可读写", Toast.LENGTH_SHORT).show();
     }
 
-    public static void savaFileToSD(Context context, String filePath, byte[] bytes) throws Exception {
+    public static BufferedOutputStream getBufferedOutputStream(Context context, String filePath) {
         //如果手机已插入sd卡,且app具有读写sd卡的权限
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
-            //这里就不要用openFileOutput了,那个是往手机内存中写数据的
-            DataOutputStream output = new DataOutputStream(fileOutputStream);
-            output.write(bytes);
-            output.close();
+            try {
+                return new BufferedOutputStream(new FileOutputStream(filePath));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
             //关闭输出流
         } else Toast.makeText(context, "SD卡不存在或者不可读写", Toast.LENGTH_SHORT).show();
+        return null;
     }
+
 
     public String readFromSD(String filename) throws IOException {
         StringBuilder sb = new StringBuilder("");

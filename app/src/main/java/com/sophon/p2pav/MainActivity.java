@@ -1,20 +1,12 @@
 package com.sophon.p2pav;
 
 import android.Manifest;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.TextureView;
-import android.view.View;
 
-import com.sophon.p2pav.decode.BaseDecode;
-import com.sophon.p2pav.utils.CameraUtils;
+import com.sophon.p2pav.utils.CameraUtil;
+import com.sophon.p2pav.utils.FileUtils;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -22,52 +14,31 @@ public class MainActivity extends AppCompatActivity {
 
     private final int REQUEST = 1;
     private SurfaceView surfaceView;
-    private TextureView mTextureView;
+    private SurfaceView surfaceView2;
+    private int mImageWidth = 640;
+    private int mImageHeight = 480;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         surfaceView = findViewById(R.id.sfv);
-        mTextureView = findViewById(R.id.tv);
+        surfaceView2 = findViewById(R.id.sfv2);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this,
-                    new String[]{Manifest.permission.CAMERA}
-                    , REQUEST);
-        }
+
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.MOUNT_UNMOUNT_FILESYSTEMS,
+                        Manifest.permission.CAMERA}
+                , REQUEST);
 
         init();
     }
 
-
     private void init() {
-
-        new CameraUtils(this,mTextureView);
-//        SurfaceHolder surfaceHolder = surfaceView.getHolder();
-//        surfaceHolder.addCallback(new SurfaceHolder.Callback() {
-//            @Override
-//            public void surfaceCreated(@NonNull SurfaceHolder holder) {
-//                baseDecodeList.clear();
-//                ExecutorService mExecutorService = Executors.newFixedThreadPool(2);
-//                baseDecodeList.add(videoDecode);
-//                baseDecodeList.add(audioEncode);
-//                mExecutorService.execute(videoDecode);
-//                mExecutorService.execute(audioEncode);
-//            }
-//
-//            @Override
-//            public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
-//
-//            }
-//
-//            @Override
-//            public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
-//                for (BaseDecode baseDecode : baseDecodeList) {
-//                    baseDecode.stop();
-//                }
-//            }
-//        });
-//        surfaceView.setVisibility(View.VISIBLE);
+        String filePath = FileUtils.getPath(MainActivity.this) + "/output.h264";
+        new CameraUtil(this, surfaceView2, filePath, mImageWidth, mImageHeight);
     }
+
 }
