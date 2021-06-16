@@ -15,8 +15,6 @@ public class MainActivity extends AppCompatActivity {
     private final int REQUEST = 1;
     private SurfaceView surfaceView;
     private SurfaceView surfaceView2;
-    private int mImageWidth = 640;
-    private int mImageHeight = 480;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +35,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
-        String filePath = FileUtils.getPath(MainActivity.this) + "/output.h264";
-        new CameraUtil(this, surfaceView2, filePath, mImageWidth, mImageHeight);
+        new CameraUtil(surfaceView,surfaceView2);
     }
 
 }
