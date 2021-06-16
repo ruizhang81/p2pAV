@@ -2,7 +2,98 @@ package com.sophon.p2pav.utils;
 
 import com.sophon.p2pav.Config;
 
-public class YucUtils {
+public class YuvUtil {
+
+    public static byte[] rotateYUVDegree270AndMirror(byte[] data, int imageWidth, int imageHeight) {
+        byte[] yuv = new byte[imageWidth * imageHeight * 3 / 2];
+
+// Rotate and mirror the Y luma
+
+        int i = 0;
+
+        int maxY = 0;
+
+        for (int x = imageWidth - 1; x >= 0; x--) {
+            maxY = imageWidth * (imageHeight - 1) + x * 2;
+
+            for (int y = 0; y < imageHeight; y++) {
+                yuv[i] = data[maxY - (y * imageWidth + x)];
+
+                i++;
+
+            }
+
+        }
+
+// Rotate and mirror the U and V color components
+
+        int uvSize = imageWidth * imageHeight;
+
+        i = uvSize;
+
+        int maxUV = 0;
+
+        for (int x = imageWidth - 1; x > 0; x = x - 2) {
+            maxUV = imageWidth * (imageHeight / 2 - 1) + x * 2 + uvSize;
+
+            for (int y = 0; y < imageHeight / 2; y++) {
+                yuv[i] = data[maxUV - 2 - (y * imageWidth + x - 1)];
+
+                i++;
+
+                yuv[i] = data[maxUV - (y * imageWidth + x)];
+
+                i++;
+
+            }
+
+        }
+
+        return yuv;
+
+    }
+
+    /**
+     * 此处为顺时针旋转270
+     * @param data 旋转前的数据
+     * @param imageWidth 旋转前数据的宽
+     * @param imageHeight 旋转前数据的高
+     * @return 旋转后的数据
+     */
+    public static byte[] rotateYUV420Degree270(byte[] data, int imageWidth, int imageHeight){
+
+        byte[] yuv =new byte[imageWidth*imageHeight*3/2];
+
+        // Rotate the Y luma
+
+        int i =0;
+
+        for(int x = imageWidth-1;x >=0;x--){
+
+            for(int y =0;y < imageHeight;y++){
+
+                yuv[i]= data[y*imageWidth+x];
+                i++;
+
+            }
+        }// Rotate the U and V color components
+        i = imageWidth*imageHeight;
+
+        for(int x = imageWidth-1;x >0;x=x-2){
+
+            for(int y =0;y < imageHeight/2;y++){
+                yuv[i]= data[(imageWidth*imageHeight)+(y*imageWidth)+(x-1)];
+                i++;
+                yuv[i]= data[(imageWidth*imageHeight)+(y*imageWidth)+x];
+                i++;
+
+            }
+
+        }
+
+        return yuv;
+
+    }
 
     //顺时针旋转270度
     public static void YUV420spRotate270(byte[] des, byte[] src, int width, int height) {
@@ -92,7 +183,7 @@ public class YucUtils {
     }
 
     //逆时针旋转90
-    public static void YUV420spRotate90Anticlockwise(byte[] src, byte[] dst, int width, int height) {
+    public static  void YUV420spRotate90Anticlockwise(byte[] src, byte[] dst, int width, int height) {
         int wh = width * height;
         int uvHeight = height >> 1;
 
@@ -186,5 +277,23 @@ public class YucUtils {
 
     public static long computePresentationTime(long frameIndex) {
         return 132 + frameIndex * 1000000 / Config.frameRate;
+    }
+
+    public static void NV21ToNV12(byte[] nv21, byte[] nv12, int width, int height) {
+        if (nv21 == null || nv12 == null) {
+            return;
+        }
+        int framesize = width * height;
+        int i = 0, j = 0;
+        System.arraycopy(nv21, 0, nv12, 0, framesize);
+        for (i = 0; i < framesize; i++) {
+            nv12[i] = nv21[i];
+        }
+        for (j = 0; j < framesize / 2; j += 2) {
+            nv12[framesize + j - 1] = nv21[j + framesize];
+        }
+        for (j = 0; j < framesize / 2; j += 2) {
+            nv12[framesize + j] = nv21[j + framesize - 1];
+        }
     }
 }

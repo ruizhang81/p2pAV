@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.hardware.Camera;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -79,6 +80,8 @@ public class CameraUtil {
                     parameters.setPreviewFormat(ImageFormat.NV21);
                     parameters.setPreviewSize(Config.mImageWidth, Config.mImageHeight);
                     parameters.setPreviewFrameRate(Config.frameRate);
+
+                    findBestPreviewSize(parameters);
                     camera.setParameters(parameters);
                     camera.setPreviewDisplay(surfaceHolder);
                     camera.startPreview();
@@ -102,7 +105,65 @@ public class CameraUtil {
     }
 
 
+    /**
+     * 找到最合适的显示分辨率 （防止预览图像变形）
+     *
+     * @param parameters
+     * @return
+     */
+    private Camera.Size findBestPreviewSize(Camera.Parameters parameters) {
 
+        // 系统支持的所有预览分辨率
+        String previewSizeValueString = null;
+        previewSizeValueString = parameters.get("preview-size-values");
+
+        if (previewSizeValueString == null) {
+            previewSizeValueString = parameters.get("preview-size-value");
+        }
+
+        float bestX = 0;
+        float bestY = 0;
+
+        float tmpRadio = 0;
+        float viewRadio = 0;
+
+        String[] COMMA_PATTERN = previewSizeValueString.split(",");
+        for (String prewsizeString : COMMA_PATTERN) {
+            prewsizeString = prewsizeString.trim();
+
+            int dimPosition = prewsizeString.indexOf('x');
+            if (dimPosition == -1) {
+                continue;
+            }
+
+            float newX = 0;
+            float newY = 0;
+
+            try {
+                newX = Float.parseFloat(prewsizeString.substring(0, dimPosition));
+                newY = Float.parseFloat(prewsizeString.substring(dimPosition + 1));
+            } catch (NumberFormatException e) {
+                continue;
+            }
+
+            float radio = Math.min(newX, newY) / Math.max(newX, newY);
+            if (tmpRadio == 0) {
+                tmpRadio = radio;
+                bestX = newX;
+                bestY = newY;
+            } else if (tmpRadio != 0 && (Math.abs(radio - viewRadio)) < (Math.abs(tmpRadio - viewRadio))) {
+                tmpRadio = radio;
+                bestX = newX;
+                bestY = newY;
+            }
+            Log.e("camera","x:"+bestX + "  y:"+bestY);
+        }
+
+        if (bestX > 0 && bestY > 0) {
+            return camera.new Size((int) bestX, (int) bestY);
+        }
+        return null;
+    }
 
 
 }

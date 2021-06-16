@@ -2,20 +2,15 @@ package com.sophon.p2pav.encode;
 
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 
 import com.sophon.p2pav.Config;
-import com.sophon.p2pav.utils.YucUtils;
+import com.sophon.p2pav.utils.YuvUtil;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.ArrayBlockingQueue;
 
 public class ViedoEncode {
     private MediaCodec mediaCodec;
@@ -24,7 +19,7 @@ public class ViedoEncode {
     @SuppressLint("NewApi")
     public ViedoEncode() {
 
-        MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, Config.mImageWidth,Config.mImageHeight );
+        MediaFormat mediaFormat = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, Config.mImageHeight,Config.mImageWidth );
         mediaFormat.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible);
         mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, Config.mImageWidth * Config.mImageHeight);
         mediaFormat.setInteger(MediaFormat.KEY_FRAME_RATE, Config.frameRate);
@@ -53,15 +48,17 @@ public class ViedoEncode {
         long generateIndex = 0;
 
         byte[] yuv420sp = new byte[Config.mImageWidth * Config.mImageHeight*3/2];
-        NV21ToNV12(input,yuv420sp,Config.mImageWidth , Config.mImageHeight);
-//                    YucUtils.YUV420spRotate270(yuv420sp,input,m_height,m_width);
-        input = yuv420sp;
+        YuvUtil.NV21ToNV12(input,yuv420sp,Config.mImageHeight,Config.mImageWidth);
+
+        byte[] rotateYuv420 = new byte[Config.mImageWidth * Config.mImageHeight*3/2];
+        YuvUtil.YUV420spRotate90Anticlockwise(yuv420sp, rotateYuv420,Config.mImageWidth,Config.mImageHeight);
+        input = rotateYuv420;
         try {
             ByteBuffer[] inputBuffers = mediaCodec.getInputBuffers();
             ByteBuffer[] outputBuffers = mediaCodec.getOutputBuffers();
             int inputBufferIndex = mediaCodec.dequeueInputBuffer(Config.TIMEOUT_USEC);
             if (inputBufferIndex >= 0) {
-                pts = YucUtils.computePresentationTime(generateIndex);
+                pts = YuvUtil.computePresentationTime(generateIndex);
                 ByteBuffer inputBuffer = inputBuffers[inputBufferIndex];
                 inputBuffer.clear();
                 inputBuffer.put(input);
@@ -96,23 +93,7 @@ public class ViedoEncode {
         }
     }
 
-    private void NV21ToNV12(byte[] nv21, byte[] nv12, int width, int height) {
-        if (nv21 == null || nv12 == null) {
-            return;
-        }
-        int framesize = width * height;
-        int i = 0, j = 0;
-        System.arraycopy(nv21, 0, nv12, 0, framesize);
-        for (i = 0; i < framesize; i++) {
-            nv12[i] = nv21[i];
-        }
-        for (j = 0; j < framesize / 2; j += 2) {
-            nv12[framesize + j - 1] = nv21[j + framesize];
-        }
-        for (j = 0; j < framesize / 2; j += 2) {
-            nv12[framesize + j] = nv21[j + framesize - 1];
-        }
-    }
+
 
 
 

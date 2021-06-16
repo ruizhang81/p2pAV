@@ -2,11 +2,10 @@ package com.sophon.p2pav.decode;
 
 import android.media.MediaCodec;
 import android.media.MediaFormat;
-import android.util.Log;
 import android.view.Surface;
 
 import com.sophon.p2pav.Config;
-import com.sophon.p2pav.utils.YucUtils;
+import com.sophon.p2pav.utils.YuvUtil;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -16,9 +15,11 @@ public class AvcDecode {
     private MediaCodec mediaCodec;
     private long presentationTimeUs = 0;
 
+    private int width = Config.mImageHeight;
+    private int height = Config.mImageWidth;
     public AvcDecode(Surface surface) {
         MediaFormat mediaFormat = MediaFormat.createVideoFormat(
-                MediaFormat.MIMETYPE_VIDEO_AVC, Config.mImageWidth, Config.mImageHeight);
+                MediaFormat.MIMETYPE_VIDEO_AVC, width,height );
         try {
             mediaCodec = MediaCodec.createDecoderByType(MediaFormat.MIMETYPE_VIDEO_AVC);
             mediaCodec.configure(mediaFormat, surface, null, 0);
@@ -39,7 +40,7 @@ public class AvcDecode {
             inputBuffer.put(h264);
 
             //计算pts
-            long pts = YucUtils.computePresentationTime(presentationTimeUs);
+            long pts = YuvUtil.computePresentationTime(presentationTimeUs);
             mediaCodec.queueInputBuffer(inputBufferIndex, 0, h264.length, pts, 0);
             presentationTimeUs += 1;
 

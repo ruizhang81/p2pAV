@@ -7,17 +7,15 @@
 
     <SurfaceView
         android:id="@+id/sfv"
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 
     <SurfaceView
         android:id="@+id/sfv2"
         android:layout_alignParentRight="true"
         android:layout_alignParentBottom="true"
-        android:layout_width="100dp"
-        android:layout_height="100dp" />
+        android:layout_width="160dp"
+        android:layout_height="120dp" />
 
 </RelativeLayout>
